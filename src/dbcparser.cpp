@@ -77,6 +77,23 @@ bool DBCParser::parse(const std::string& data) noexcept
 {
     auto noTabsData = dos2unix(data);
 
+    // Clean up escapes
+    do {
+        auto i = noTabsData.find("\\\"");
+        if(i == std::string::npos)
+          break;
+        noTabsData.replace(i, 2, "");
+      } while(true);
+
+    /*
+    // Clean up "-"
+    do {
+        auto i = noTabsData.find("\"-\"");
+        if(i == std::string::npos)
+          break;
+        noTabsData.replace(i, 3, "0");
+      } while(true);
+*/
     peg::parser parser;
 
     parser.log = [](size_t l, size_t k, const std::string& s) {
@@ -114,7 +131,7 @@ bool DBCParser::parse(const std::string& data) noexcept
 
     parser["phrase"] = [&phrases](const peg::SemanticValues& sv) {
         auto s = sv.token();
-        boost::algorithm::erase_all(s, "\"");
+        boost::algorithm::erase_all(s, "\\\"");
         phrases.push_back(s);
     };
 
